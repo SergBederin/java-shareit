@@ -133,7 +133,7 @@ public class ItemStorageInMemory implements ItemStorage {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        if (storageItems.get(item.getId()).getOwnerId() != userId) {
+        if (!(storageItems.get(item.getId()).getOwnerId().equals(userId))) {
             log.info("Невозможно обновить. Собственники у вещи разные /id={}/", item.getId());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
