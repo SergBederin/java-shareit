@@ -1,26 +1,31 @@
 package ru.practicum.shareit.item;
 
+
+import lombok.Builder;
+import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
+@Service
+@Builder
 public class ItemMapper {
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getRequestId()
-        );
+    public ItemDto toItemDto(Item item) {
+
+        return ItemDto.builder()
+                .id(item.getId())
+                .owner(item.getOwnerId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .build();
     }
 
-    public Item toItem(ItemDto itemDto, Long ownerId) {
-        Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        item.setOwnerId(ownerId);
-        item.setRequestId(itemDto.getRequestId());
-        return item;
+    public Item toItem(ItemDto itemDto, Long id) {
+        return Item.builder()
+                .ownerId(id)
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable())
+                .build();
     }
 }

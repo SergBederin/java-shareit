@@ -11,29 +11,30 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserStorageInMemory repository;
+    private final UserStorageInMemory repositoryUser;
 
     public List<User> getAll() {
-        return repository.getUsers();
+        return repositoryUser.getUsers();
     }
 
     public User getById(long id) {
-        return repository.getUserById(id);
+        return repositoryUser.getUserById(id);
     }
 
     public User add(User user) {
-        repository.createUser(user);
+        repositoryUser.createUser(user);
+        log.info("Пользователь добавлен", user);
         return user;
     }
 
     public User update(long id, User user) {
-
-        return repository.updateUser(id, user);
+        log.info("Пользователь обнавлен", user);
+        return repositoryUser.updateUser(id, user);
     }
 
     public void delete(long id) {
         User user = getById(id);
-        repository.deleteUser(id);
+        repositoryUser.deleteUser(user.getId());
         log.info("Пользователь с id={} удален", id);
     }
 }
