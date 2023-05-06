@@ -1,12 +1,8 @@
 package ru.practicum.shareit.user;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.server.ResponseStatusException;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
@@ -15,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
-@RequiredArgsConstructor
+@Getter
 @Slf4j
 public class UserStorageInMemory implements UserStorage {
     private final Map<Long, User> storageUser = new HashMap<>();
@@ -34,7 +30,6 @@ public class UserStorageInMemory implements UserStorage {
 
     @Override
     public User createUser(User user) {
-        validateEmail(user);
         user.setId(getNewId());
         storageUser.put(user.getId(), user);
         log.info("Добавлен пользователь: {}", user);
@@ -44,47 +39,38 @@ public class UserStorageInMemory implements UserStorage {
     @Override
     public User updateUser(long id, User user) {
         user.setId(id);
-        if (user.getEmail() != null) {
-            validateEmail(user);
-            storageUser.get(id).setEmail(user.getEmail());
-        }
-        if (user.getName() != null) {
-            storageUser.get(id).setName(user.getName());
-        }
+        storageUser.values().forEach(lastUser -> {
+            if (lastUser.getId() == id) {
+                updater(lastUser, user);
+            }
+        });
         log.info("Обновлен пользователь {}", storageUser.get(id));
-
-        return storageUser.get(id);
+        return getUserById(id);
     }
 
     @Override
     public User getUserById(Long userId) {
-        if (!storageUser.containsKey(userId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь с ID=" + userId + " не найден!");
-        }
         log.info("Запрошен пользователь /id={}/", userId);
         return storageUser.get(userId);
     }
 
     @Override
     public void deleteUser(Long userId) {
-        if (userId == null) {
-            throw new ValidationException("Передан пустой аргумент!");
-        }
-        if (!storageUser.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с ID=" + userId + " не найден!");
-        }
         storageUser.remove(userId);
+        log.info("Пользователь с id={} удален", userId);
     }
 
-    private void validateEmail(User user) {
-
-        for (User userInStorage : storageUser.values()) {
-            if (user.getEmail().equals(userInStorage.getEmail()) && user.getId() != userInStorage.getId()) {
-                log.info("Дублируются Email пользователей {}", user.getEmail());
-                throw new ResponseStatusException(HttpStatus.CONFLICT);
-            }
+    private void updater(User lastUser, User newUser) {
+        if (newUser.getName() != null) {
+            lastUser.setName(newUser.getName());
+        } else {
+            log.info("При обновление данных пользователя неуказано имя {}", newUser.getName());
         }
-
+        if (newUser.getEmail() != null) {
+            lastUser.setEmail(newUser.getEmail());
+        } else {
+            log.info("При обновление данных пользователя неуказан email {}", newUser.getEmail());
+        }
     }
 }
 

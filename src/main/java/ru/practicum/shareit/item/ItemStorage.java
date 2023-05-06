@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface ItemStorage {
@@ -14,5 +13,5 @@ public interface ItemStorage {
 
     List<Item> getAllItemUserId(Long userId);
 
-    Collection<Item> searchItem(String text);
+    List<Item> searchItem(String text);
 }

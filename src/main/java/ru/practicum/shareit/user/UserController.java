@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * TODO Sprint add-controllers.
@@ -22,30 +20,31 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAll() {
-        return userService.getAll().stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
+        log.info("Выполняется запрос GET/users на получение всех пользователей");
+        return userService.getAll();
     }
 
     @GetMapping("/{id}")
     public UserDto getById(@PathVariable long id) {
-        return UserMapper.toUserDto(userService.getById(id));
+        log.info("Выполняется запрос GET/users/{id} на получение пользователя с id = {} ", id);
+        return userService.getById(id);
     }
 
     @PostMapping
     public UserDto create(@Valid @RequestBody UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        return UserMapper.toUserDto(userService.add(user));
+        log.info("Выполняется запрос Post /users  для добавления пользователя {}", userDto);
+        return userService.add(userDto);
     }
 
     @PatchMapping("/{id}")
     public UserDto update(@PathVariable long id, @RequestBody UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        return UserMapper.toUserDto(userService.update(id, user));
+        log.info("Выполняется запрос Patch /users/{id}  для обнавления пользователя {}", userDto);
+        return userService.update(id, userDto);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable long id) {
+        log.info("Выполняется запрос Delete/users/{id}  для удаления пользователя с id = {}", id);
         userService.delete(id);
     }
 }

@@ -13,7 +13,6 @@ public class ItemMapper {
 
         return ItemDto.builder()
                 .id(item.getId())
-                .owner(item.getOwnerId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
@@ -22,6 +21,7 @@ public class ItemMapper {
 
     public Item toItem(ItemDto itemDto, Long id) {
         return Item.builder()
+                .id(itemDto.getId())
                 .ownerId(id)
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
