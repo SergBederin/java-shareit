@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public Item updateItem(Long userId, Item item) {
+    public Item updateItem(Item item) {
         Item itemUpd = storageItems.get(item.getId());
         if (item.getName() != null) {
             itemUpd.setName(item.getName());
@@ -58,12 +57,10 @@ public class ItemStorageInMemory implements ItemStorage {
 
     @Override
     public List<Item> getAllItemUserId(Long userId) {
-        List<Item> itemList = new ArrayList<>();
-        for (Item item : storageItems.values()) {
-            if (item.getOwnerId() == (long) userId) {
-                itemList.add(item);
-            }
-        }
+        List<Item> itemList = storageItems.values()
+                .stream()
+                .filter(item -> (item.getOwnerId() == (long) userId))
+                .collect(Collectors.toList());
         log.info("Запрошены вещи владельца /id={}/", userId);
         return itemList;
     }

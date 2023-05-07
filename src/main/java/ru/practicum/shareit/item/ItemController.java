@@ -22,6 +22,7 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getByUserId(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.info("Выполняется запрос GET/items на получение вещей пользователя с id= {}", userId);
         return itemService.getAllItem(userId);
     }
 
