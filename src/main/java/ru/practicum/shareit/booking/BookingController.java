@@ -21,13 +21,13 @@ public class BookingController {
 
     @PostMapping
     BookingDto create(@Valid @RequestBody BookingDto bookingDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Выполняется запрос Post /bookings для добавление бронирования {}, пользователя с id {}", bookingDto, userId);
+        log.info("Выполняется запрос Post/bookings для добавление бронирования {}, пользователя с id {}", bookingDto, userId);
         return bookingService.add(userId, bookingDto);
     }
 
     @PatchMapping("/{bookingId}")
     BookingDto bookingConfirm(@RequestHeader("X-Sharer-User-Id") Long userId, @NotNull @PathVariable Long bookingId, @RequestParam boolean approved) {
-        log.info("Выполняется запрос Post /bookings/{bookingId} для подверждения бронирования с id ={} пользователя с id ={}}", bookingId, userId);
+        log.info("Выполняется запрос Patch/bookings/{bookingId} для подверждения бронирования с id ={} пользователя с id ={}}", bookingId, userId);
         return bookingService.bookingConfirm(userId, bookingId, approved);
     }
 

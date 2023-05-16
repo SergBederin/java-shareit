@@ -51,7 +51,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestBody ItemDto itemDto, @PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
         itemDto.setId(itemId);
-        log.info("Выполняется запрос Post /items/{itemId} для обнавления вещи id ={}", itemId);
+        log.info("Выполняется запрос Patch/items/{itemId} для обнавления вещи id ={}", itemId);
         return itemService.update(userId, itemDto);
     }
 
