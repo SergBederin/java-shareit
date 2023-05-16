@@ -54,8 +54,8 @@ public class ItemService {
         if (item.getAvailable() != null) {
             itemUpd.setAvailable(item.getAvailable());
         }
-        if (item.getRequestId() != null) {
-            itemUpd.setRequestId(item.getRequestId());
+        if (item.getRequest() != null) {
+            itemUpd.setRequest(item.getRequest());
         }
         return ItemMapper.toItemDto(itemRepository.save(itemUpd));
     }

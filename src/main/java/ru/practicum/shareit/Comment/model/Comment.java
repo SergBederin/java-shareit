@@ -22,10 +22,10 @@ public class Comment {
     private Long id;
     private String text;
     @ManyToOne
-    @JoinColumn(name = "item_id", referencedColumnName = "id")
+    @JoinColumn(name = "item_id")
     private Item item;
     @ManyToOne
-    @JoinColumn(name = "author_id", referencedColumnName = "id")
+    @JoinColumn(name = "author_id")
     private User user;
     private LocalDateTime created;
 }
