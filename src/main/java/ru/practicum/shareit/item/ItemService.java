@@ -35,7 +35,7 @@ public class ItemService {
                 .orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
         Item item = ItemMapper.toItem(itemDto, user);
         validate(item);
-        log.info("Добавлена вещь /{}/", item);
+        log.info("Добавлена вещь {}", item);
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
@@ -90,7 +90,7 @@ public class ItemService {
             for (Item item : itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text, true)) {
                 listSearch.add(ItemMapper.toItemDto(item));
             }
-            log.info("Запрошен поиск по строке {},найдено /{}/", text, listSearch.size());
+            log.info("Запрошен поиск по строке {},найдено {}", text, listSearch.size());
             return listSearch;
         } else {
             return List.of();
@@ -106,11 +106,11 @@ public class ItemService {
 
     private void validateForUpdate(Item item, Long userId) {
         if (itemRepository.findById(item.getId()).isEmpty() || userRepository.findById(userId).isEmpty()) {
-            log.info("Невозможно обновить. Запрошеная вещь не найдена /id={}/", item.getId());
+            log.info("Невозможно обновить. Запрошеная вещь не найдена id={}", item.getId());
             throw new NotFoundException("Невозможно обновить вещь.");
         }
         if (!itemRepository.findById(item.getId()).orElseThrow().getOwner().getId().equals(userId)) {
-            log.info("Невозможно обновить. Собственники у вещи разные /id={}/", item.getId());
+            log.info("Невозможно обновить. Собственники у вещи разные id={}", item.getId());
             throw new NotFoundException("Невозможно обновить вещь.");
         }
     }

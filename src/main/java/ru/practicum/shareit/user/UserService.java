@@ -47,7 +47,7 @@ public class UserService {
             user.setName(userUpd.getName());
         }
         userRepository.save(user);
-        log.info("Обновлен пользователь newValue=/{}/", user);
+        log.info("Обновлен пользователь newValue={}", user);
         return getById(user.getId());
     }
 
@@ -57,7 +57,7 @@ public class UserService {
         }
         getById(userId);
         userRepository.deleteById(userId);
-        log.info("Удален пользователь /id={}/", userId);
+        log.info("Удален пользователь id={}", userId);
     }
 
     private boolean validateEmail(User user) {

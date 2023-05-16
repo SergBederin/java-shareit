@@ -54,7 +54,7 @@ public class BookingService {
                 booking.setBookingStatus(BookingStatus.REJECTED);
             }
             bookingRepository.save(booking);
-            log.info("Изменен статус бронирования /{}/", booking);
+            log.info("Изменен статус бронирования {}", booking);
             return BookingMapper.toBookingDto(booking);
         } else {
             throw new NotFoundException("При подтверждение бронирования вещь с ID=" + booking.getItem().getId() + " не найдена!");
@@ -65,7 +65,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException("Бронирование с ID= " + bookingId + " не найдено!"));
         //validation(booking, userId);
         if (Objects.equals(booking.getBooker().getId(), userId) || Objects.equals(booking.getItem().getOwner().getId(), userId)) {
-            log.info("Запрошено бронирование /{}/ пользователя /{}/", bookingId, userId);
+            log.info("Запрошено бронирование {} пользователя {}", bookingId, userId);
             return BookingMapper.toBookingDto(bookingRepository.getByIdBooking(bookingId, userId));
         } else {
             throw new NotFoundException("Бронирование с ID= " + bookingId + " у пользователя с ID= " + userId + " не найдено!");
