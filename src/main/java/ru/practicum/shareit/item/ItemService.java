@@ -7,7 +7,7 @@ import ru.practicum.shareit.Comment.CommentService;
 import ru.practicum.shareit.Comment.dto.CommentDto;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.dto.BookingWithDate;
+import ru.practicum.shareit.booking.dto.BookingDtoWithDate;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -63,16 +63,16 @@ public class ItemService {
     public ItemDtoWithBookingAndComments getByItemId(Long userId, Long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
-        BookingWithDate bookingLast = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdLast(userId, itemId, LocalDateTime.now()));
-        BookingWithDate bookingNext = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdNext(userId, itemId, LocalDateTime.now()));
+        BookingDtoWithDate bookingLast = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdLast(userId, itemId, LocalDateTime.now()));
+        BookingDtoWithDate bookingNext = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdNext(userId, itemId, LocalDateTime.now()));
         List<CommentDto> comments = commentService.getCommentsByItemId(itemId);
         log.info("Запрошена вещь id={}, пользователя с id= {}", itemId, userId);
         return ItemMapper.mapToItemDtoWithBookingAndComments(item, bookingLast, bookingNext, comments);
     }
 
     public List<ItemDtoWithBookingAndComments> getAllItemByUser(Long userId) {
-        HashMap<Long, BookingWithDate> bookingsLast = new HashMap<>();
-        HashMap<Long, BookingWithDate> bookingsNext = new HashMap<>();
+        HashMap<Long, BookingDtoWithDate> bookingsLast = new HashMap<>();
+        HashMap<Long, BookingDtoWithDate> bookingsNext = new HashMap<>();
         HashMap<Long, List<CommentDto>> comments = new HashMap<>();
         List<Item> items = itemRepository.findByOwnerId(userId);
         for (Item i : items) {

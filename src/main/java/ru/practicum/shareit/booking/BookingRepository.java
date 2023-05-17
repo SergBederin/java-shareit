@@ -17,13 +17,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "group by b.id", nativeQuery = true)
     Booking getByIdBooking(Long bookingId, Long bookerId);
 
+    //List<Booking> findAllBookingByBookerId(Long userId);
     @Query(value = "select b " +
-            "from Booking as b " +
-            "join fetch b.item as i " +
-            "join fetch b.booker as u " +
-            "where b.booker.id = ?1 " +
-            "order by b.start desc")
+            "from Booking b " +
+            "join Item i on i.id=b.item " +
+            "and b.booker.id=?1 and b.booker.id <> i.owner "
+            + "order by b.start desc")
     List<Booking> getBookingByBookerIdAll(Long userId);
+
 
     @Query(value = "select b " +
             "from Booking as b " +

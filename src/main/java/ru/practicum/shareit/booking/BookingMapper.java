@@ -1,9 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingWithDate;
+import ru.practicum.shareit.booking.dto.BookingDtoWithDate;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -11,7 +10,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+//@Service
 @NoArgsConstructor
 public class BookingMapper {
     public static Booking toBooking(BookingDto bookingDto, Item item, User user) {
@@ -44,9 +43,9 @@ public class BookingMapper {
         return listBookingDto;
     }
 
-    public static BookingWithDate mapToBookingWithoutDate(Booking booking) {
+    public static BookingDtoWithDate mapToBookingWithoutDate(Booking booking) {
         if (booking != null) {
-            return BookingWithDate.builder()
+            return BookingDtoWithDate.builder()
                     .id(booking.getId())
                     .start(booking.getStart())
                     .end(booking.getEnd())

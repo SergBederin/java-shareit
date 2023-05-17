@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -13,7 +14,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -80,6 +80,8 @@ public class BookingService {
                 case ALL:
                     log.info("Все бронирования пользователя c id = {}, статус ALL", userId);
                     return BookingMapper.mapToBookingDto(bookingRepository.getBookingByBookerIdAll(userId));
+                //  return BookingMapper.mapToBookingDto(bookingRepository.findAllBookingByBookerId(userId));
+
                 case CURRENT:
                     log.info("Все бронирования пользователя c id = {}, статус CURRENT", userId);
                     return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusCurrent(userId, LocalDateTime.now()));

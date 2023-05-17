@@ -1,14 +1,11 @@
 package ru.practicum.shareit.item;
 
 
-import lombok.Builder;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.Comment.dto.CommentDto;
-import ru.practicum.shareit.booking.dto.BookingWithDate;
+import ru.practicum.shareit.booking.dto.BookingDtoWithDate;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
@@ -17,10 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
-@Builder
 public class ItemMapper {
-    private UserRepository userRepository;
 
     public static ItemDto toItemDto(Item item) {
         return ItemDto.builder()
@@ -41,7 +35,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDtoWithBookingAndComments mapToItemDtoWithBookingAndComments(Item item, BookingWithDate bookingLast, BookingWithDate bookingNext, List<CommentDto> comments) {
+    public static ItemDtoWithBookingAndComments mapToItemDtoWithBookingAndComments(Item item, BookingDtoWithDate bookingLast, BookingDtoWithDate bookingNext, List<CommentDto> comments) {
         return ItemDtoWithBookingAndComments.builder()
                 .id(item.getId())
                 .owner(item.getOwner().getId())
@@ -54,11 +48,11 @@ public class ItemMapper {
                 .build();
     }
 
-    public static List<ItemDtoWithBookingAndComments> mapToItemDtoWithBookingAndComments(List<Item> listItem, HashMap<Long, BookingWithDate> bookingsLast, HashMap<Long, BookingWithDate> bookingsNext, HashMap<Long, List<CommentDto>> comments) {
+    public static List<ItemDtoWithBookingAndComments> mapToItemDtoWithBookingAndComments(List<Item> listItem, HashMap<Long, BookingDtoWithDate> bookingsLast, HashMap<Long, BookingDtoWithDate> bookingsNext, HashMap<Long, List<CommentDto>> comments) {
         List<ItemDtoWithBookingAndComments> listItemDtoWithBooking = new ArrayList<>();
         for (Item item : listItem) {
-            BookingWithDate bookingLast = bookingsLast.get(item.getId());
-            BookingWithDate bookingNext = bookingsNext.get(item.getId());
+            BookingDtoWithDate bookingLast = bookingsLast.get(item.getId());
+            BookingDtoWithDate bookingNext = bookingsNext.get(item.getId());
             List<CommentDto> commentList = comments.get(item.getId());
             listItemDtoWithBooking.add(mapToItemDtoWithBookingAndComments(item, bookingLast, bookingNext, commentList));
         }

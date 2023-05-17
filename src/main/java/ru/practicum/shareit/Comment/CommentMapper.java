@@ -1,7 +1,5 @@
 package ru.practicum.shareit.Comment;
 
-import lombok.Builder;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.Comment.dto.CommentDto;
 import ru.practicum.shareit.Comment.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -10,8 +8,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-@Builder
+
 public class CommentMapper {
     public static Comment mapToComment(CommentDto commentDto, User user, Item item) {
         return Comment.builder()
