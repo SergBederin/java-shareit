@@ -16,56 +16,55 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserStorageInMemory repositoryUser;
+    private final UserRepository userRepository;
 
     public List<UserDto> getAll() {
-        return repositoryUser.getUsers().stream()
+        log.info("Запрос на получение всех пользователей выполнен");
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
-    public UserDto getById(Long id) {
-        if (!repositoryUser.getStorageUser().containsKey(id)) {
-            throw new NotFoundException("Пользователь с ID=" + id + " не найден!");
-        }
-        return UserMapper.toUserDto(repositoryUser.getUserById(id));
+    public UserDto getById(Long userId) {
+        return UserMapper.toUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!")));
     }
 
     public UserDto add(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        if (validateEmail(user)) {
-            repositoryUser.createUser(user);
-        }
+        userRepository.save(user);
+        log.info("Добавлен пользователь = {}", user);
         return getById(user.getId());
     }
 
-    public UserDto update(long id, UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        user.setId(id);
-        if (validateEmail(user)) {
-            repositoryUser.updateUser(id, user);
+    public UserDto update(Long userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
+        User userUpd = UserMapper.toUser(userDto);
+        if (userUpd.getEmail() != null) {
+            user.setEmail(userUpd.getEmail());
         }
-        return getById(id);
+        if (userUpd.getName() != null) {
+            user.setName(userUpd.getName());
+        }
+        userRepository.save(user);
+        log.info("Обновлен пользователь newValue={}", user);
+        return getById(user.getId());
     }
 
-    public void delete(Long id) {
-        if (id == null) {
+    public void delete(Long userId) {
+        if (userId == null) {
             throw new ValidationException("Передан пустой аргумент!");
         }
-        if (!repositoryUser.getStorageUser().containsKey(id)) {
-            throw new NotFoundException("Пользователь с ID=" + id + " не найден!");
-        }
-        repositoryUser.deleteUser(id);
+        getById(userId);
+        userRepository.deleteById(userId);
+        log.info("Удален пользователь id={}", userId);
     }
 
     private boolean validateEmail(User user) {
-        if (repositoryUser.getStorageUser().values().stream()
-                .noneMatch(lastUser -> lastUser.getEmail().equals(user.getEmail())
-                        && lastUser.getId() != user.getId())) {
+        if (!userRepository.existsByEmail(user.getEmail())) {
             return true;
         } else {
             throw new ConflictException("Дублируются Email пользователей.");
         }
-
     }
 }

@@ -3,86 +3,114 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Comment.CommentService;
+import ru.practicum.shareit.Comment.dto.CommentDto;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDtoWithDate;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserStorageInMemory;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItemService {
-    private final UserStorageInMemory userStorage;
-    private final ItemStorageInMemory itemStorage;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentService commentService;
 
     public ItemDto add(ItemDto itemDto, Long userId) {
-        Item item = ItemMapper.toItem(itemDto, userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
+        Item item = ItemMapper.toItem(itemDto, user);
         validate(item);
-        if (!userStorage.getStorageUser().containsKey(userId)) {
-            throw new NotFoundException("Вещь не добавлена. Пользователь с ID=" + userId + " не найден!");
-        }
-        return ItemMapper.toItemDto(itemStorage.createItem(item));
+        log.info("Добавлена вещь {}", item);
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     public ItemDto update(Long userId, ItemDto itemDto) {
-        Item item = ItemMapper.toItem(itemDto, userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
+        Item item = ItemMapper.toItem(itemDto, user);
         validateForUpdate(item, userId);
-        if (!userStorage.getStorageUser().containsKey(item.getOwnerId())) {
-            throw new NotFoundException("Пользователь с ID=" + userId + " не найден!");
+        Item itemUpd = itemRepository.findById(item.getId()).orElseThrow(() -> new NotFoundException("Вещь с ID=" + item.getId() + " не найдена!"));
+        if (item.getName() != null) {
+            itemUpd.setName(item.getName());
         }
-        return ItemMapper.toItemDto(itemStorage.updateItem(item));
+        if (item.getDescription() != null) {
+            itemUpd.setDescription(item.getDescription());
+        }
+        if (item.getAvailable() != null) {
+            itemUpd.setAvailable(item.getAvailable());
+        }
+        if (item.getRequest() != null) {
+            itemUpd.setRequest(item.getRequest());
+        }
+        return ItemMapper.toItemDto(itemRepository.save(itemUpd));
     }
 
-    public ItemDto getById(Long id) {
-        if (!itemStorage.getStorageItems().containsKey(id) || id.equals(null)) {
-            throw new NotFoundException("Пользователь с ID=" + id + " не найден!");
-        }
-        return ItemMapper.toItemDto(itemStorage.getItemById(id));
+    public ItemDtoWithBookingAndComments getByItemId(Long userId, Long itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
+        BookingDtoWithDate bookingLast = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdLast(userId, itemId, LocalDateTime.now()));
+        BookingDtoWithDate bookingNext = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdNext(userId, itemId, LocalDateTime.now()));
+        List<CommentDto> comments = commentService.getCommentsByItemId(itemId);
+        log.info("Запрошена вещь id={}, пользователя с id= {}", itemId, userId);
+        return ItemMapper.mapToItemDtoWithBookingAndComments(item, bookingLast, bookingNext, comments);
     }
 
-    public List<ItemDto> getAllItem(long userId) {
-        List<ItemDto> listDto = new ArrayList<>();
-        for (Item item : itemStorage.getAllItemUserId(userId)) {
-            listDto.add(ItemMapper.toItemDto(item));
+    public List<ItemDtoWithBookingAndComments> getAllItemByUser(Long userId) {
+        HashMap<Long, BookingDtoWithDate> bookingsLast = new HashMap<>();
+        HashMap<Long, BookingDtoWithDate> bookingsNext = new HashMap<>();
+        HashMap<Long, List<CommentDto>> comments = new HashMap<>();
+        List<Item> items = itemRepository.findByOwnerId(userId);
+        for (Item i : items) {
+            bookingsLast.put(i.getId(), BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdLast(userId, i.getId(), LocalDateTime.now())));
+            bookingsNext.put(i.getId(), BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdNext(userId, i.getId(), LocalDateTime.now())));
+            comments.put(i.getId(), commentService.getCommentsByItemId(i.getId()));
         }
-        return listDto;
+        log.info("Запрошены вещи владельца с ID={}", userId);
+        return ItemMapper.mapToItemDtoWithBookingAndComments(items, bookingsLast, bookingsNext, comments);
     }
 
     public List<ItemDto> search(String text) {
         if (!text.isEmpty()) {
-            List<ItemDto> listDto = new ArrayList<>();
-            for (Item item : itemStorage.searchItem(text)) {
-                listDto.add(ItemMapper.toItemDto(item));
+            List<ItemDto> listSearch = new ArrayList<>();
+            for (Item item : itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text, true)) {
+                listSearch.add(ItemMapper.toItemDto(item));
             }
-            return listDto;
+            log.info("Запрошен поиск по строке {},найдено {}", text, listSearch.size());
+            return listSearch;
         } else {
             return List.of();
         }
     }
 
     private void validate(Item item) {
-        userStorage.getUserById(item.getOwnerId());
-        if (item.getOwnerId() == null) {
+        if (item.getOwner() == null) {
             log.info("Неуказан собственник вещи с {} ", item);
-            throw new NotFoundException("Неуказан собственник вещи");
-        }
-        if (item.getAvailable() == null || item.getName().equals("") || item.getDescription() == null || item.getName() == null) {
-            log.info("Неуказано название вещи с  id={} или нет описания.", item.getId());
-            throw new ValidationException("Неуказано название вещи или нет описания.");
+            throw new ValidationException("Неуказан собственник вещи");
         }
     }
 
     private void validateForUpdate(Item item, Long userId) {
-        if (itemStorage.getItemById(item.getId()) == null) {
-            log.info("Невозможно обновить. Запрошеная вещь не найдена /id={}/", item.getId());
+        if (itemRepository.findById(item.getId()).isEmpty() || userRepository.findById(userId).isEmpty()) {
+            log.info("Невозможно обновить. Запрошеная вещь не найдена id={}", item.getId());
             throw new NotFoundException("Невозможно обновить вещь.");
         }
-        if (!(itemStorage.getItemById(item.getId()).getOwnerId().equals(userId))) {
-            log.info("Невозможно обновить. Собственники у вещи разные /id={}/", item.getId());
+        if (!itemRepository.findById(item.getId()).orElseThrow().getOwner().getId().equals(userId)) {
+            log.info("Невозможно обновить. Собственники у вещи разные id={}", item.getId());
             throw new NotFoundException("Невозможно обновить вещь.");
         }
     }
