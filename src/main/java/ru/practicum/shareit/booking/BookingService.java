@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -72,63 +74,62 @@ public class BookingService {
         }
     }
 
-    public List<BookingDto> getByIdListBookings(Long userId, String state) {
+    public List<BookingDto> getByIdListBookings(Long userId, String state, Integer from, Integer size) {
+        Pageable page = paged(from, size);
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + "не найден!"));
         try {
             StateStatus stateStatus = StateStatus.valueOf(state);
             switch (stateStatus) {
                 case ALL:
                     log.info("Все бронирования пользователя c id = {}, статус ALL", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByBookerIdAll(userId));
-                //  return BookingMapper.mapToBookingDto(bookingRepository.findAllBookingByBookerId(userId));
-
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByBookerIdAll(userId, page));
                 case CURRENT:
                     log.info("Все бронирования пользователя c id = {}, статус CURRENT", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusCurrent(userId, LocalDateTime.now()));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusCurrent(userId, LocalDateTime.now(), page));
                 case PAST:
                     log.info("Все бронирования пользователя c id = {}, статус PAST", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusPast(userId, LocalDateTime.now()));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusPast(userId, LocalDateTime.now(), page));
                 case FUTURE:
                     log.info("Все бронирования пользователя c id = {}, статус FUTURE", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusFuture(userId, LocalDateTime.now()));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusFuture(userId, LocalDateTime.now(), page));
                 case WAITING:
                     log.info("Все бронирования пользователя c id = {}, статус WAITING", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusWaiting(userId, BookingStatus.WAITING));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusWaiting(userId, BookingStatus.WAITING, page));
                 case REJECTED:
                     log.info("Все бронирования пользователя c id = {}, статус REJECTED", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusRejected(userId, BookingStatus.REJECTED));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByUserIdAndBookingStatusRejected(userId, BookingStatus.REJECTED, page));
                 default:
                     return List.of();
             }
         } catch (IllegalArgumentException e) {
-            // throw new NotStateException("Тип бронирования не указан {}." + state);
             throw new NotStateException("Unknown state: UNSUPPORTED_STATUS");
         }
     }
 
-    public List<BookingDto> getByIdOwnerBookingItems(Long userId, String state) {
+    public List<BookingDto> getByIdOwnerBookingItems(Long userId, String state, Integer from, Integer size) {
+        Pageable page = paged(from, size);
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + "не найден!"));
         try {
             StateStatus stateStatus = StateStatus.valueOf(state);
             switch (stateStatus) {
                 case ALL:
                     log.info("Все бронирования владельца вещей c id = {}, статус ALL", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByOwnerIdAll(userId));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByOwnerIdAll(userId, page));
                 case CURRENT:
                     log.info("Все бронирования владельца вещей c id = {}, статус CURRENT", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getByItemOwnerIdAndBookingStatusCurrent(userId, LocalDateTime.now()));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getByItemOwnerIdAndBookingStatusCurrent(userId, LocalDateTime.now(), page));
                 case PAST:
                     log.info("Все бронирования владельца вещей c id = {}, статус PAST", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getByItemOwnerIdAndBookingStatusPast(userId, LocalDateTime.now()));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getByItemOwnerIdAndBookingStatusPast(userId, LocalDateTime.now(), page));
                 case FUTURE:
                     log.info("Все бронирования владельца вещей c id = {}, статус FUTURE", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByItemOwnerIdAndBookingStatusFuture(userId, LocalDateTime.now()));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByItemOwnerIdAndBookingStatusFuture(userId, LocalDateTime.now(), page));
                 case WAITING:
                     log.info("Все бронирования владельца вещей c id = {}, статус WAITING", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByItemOwnerIdAndBookingStatusWaiting(userId, BookingStatus.WAITING));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByItemOwnerIdAndBookingStatusWaiting(userId, BookingStatus.WAITING, page));
                 case REJECTED:
                     log.info("Все бронирования владельца вещей c id = {}, статус REJECTED", userId);
-                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByItemOwnerIdAndBookingStatusRejected(userId, BookingStatus.REJECTED));
+                    return BookingMapper.mapToBookingDto(bookingRepository.getBookingByItemOwnerIdAndBookingStatusRejected(userId, BookingStatus.REJECTED, page));
                 default:
                     return List.of();
             }
@@ -160,6 +161,19 @@ public class BookingService {
             log.info("Неправильные даты бронирования");
             throw new NotFoundException("Неправильные даты бронирования");
         }
+    }
+
+    public Pageable paged(Integer from, Integer size) {
+        Pageable page;
+        if (from != null && size != null) {
+            if (from < 0 || size < 0) {
+                throw new NotStateException("Номер первого элемента неможет быть отрицательным.");
+            }
+            page = PageRequest.of(from > 0 ? from / size : 0, size);
+        } else {
+            page = PageRequest.of(0, 4);
+        }
+        return page;
     }
 }
 

@@ -13,6 +13,9 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestMapper;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -29,35 +32,40 @@ public class ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentService commentService;
+    private final ItemRequestService itemRequestService;
+
 
     public ItemDto add(ItemDto itemDto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
-        Item item = ItemMapper.toItem(itemDto, user);
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = ItemRequestMapper.mapToItemRequest(itemRequestService.getRequestId(userId, itemDto.getRequestId()), user);
+        }
+        Item item = ItemMapper.toItem(itemDto, user, itemRequest);
         validate(item);
         log.info("Добавлена вещь {}", item);
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public ItemDto update(Long userId, ItemDto itemDto) {
+    public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
-        Item item = ItemMapper.toItem(itemDto, user);
-        validateForUpdate(item, userId);
-        Item itemUpd = itemRepository.findById(item.getId()).orElseThrow(() -> new NotFoundException("Вещь с ID=" + item.getId() + " не найдена!"));
-        if (item.getName() != null) {
-            itemUpd.setName(item.getName());
+        ItemDto itemDtoOld = ItemMapper.mapToItemWithBookingAndComments(getByItemId(userId, itemId));
+        if (itemDto.getName() != null) {
+            itemDtoOld.setName(itemDto.getName());
         }
-        if (item.getDescription() != null) {
-            itemUpd.setDescription(item.getDescription());
+        if (itemDto.getDescription() != null) {
+            itemDtoOld.setDescription(itemDto.getDescription());
         }
-        if (item.getAvailable() != null) {
-            itemUpd.setAvailable(item.getAvailable());
+        if (itemDto.getAvailable() != null) {
+            itemDtoOld.setAvailable(itemDto.getAvailable());
         }
-        if (item.getRequest() != null) {
-            itemUpd.setRequest(item.getRequest());
+        if (itemDto.getRequestId() != null) {
+            itemDtoOld.setRequestId(itemDto.getRequestId());
         }
-        return ItemMapper.toItemDto(itemRepository.save(itemUpd));
+        return add(itemDtoOld, userId);
     }
 
     public ItemDtoWithBookingAndComments getByItemId(Long userId, Long itemId) {

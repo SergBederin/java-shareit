@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoWithDate;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
@@ -15,23 +16,51 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ItemMapper {
-
     public static ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .build();
+        if (item.getRequest() != null) {
+            return ItemDto.builder()
+                    .id(item.getId())
+                    .name(item.getName())
+                    .description(item.getDescription())
+                    .available(item.getAvailable())
+                    .requestId(item.getRequest().getId())
+                    .build();
+        } else {
+            return ItemDto.builder()
+                    .id(item.getId())
+                    .name(item.getName())
+                    .description(item.getDescription())
+                    .available(item.getAvailable())
+                    .requestId(null)
+                    .build();
+        }
     }
 
-    public static Item toItem(ItemDto itemDto, User user) {
+    public static List<ItemDto> toItemDto(List<Item> listItem) {
+        List<ItemDto> listItemDto = new ArrayList<>();
+        for (Item item : listItem) {
+            listItemDto.add(toItemDto(item));
+        }
+        return listItemDto;
+    }
+
+    public static Item toItem(ItemDto itemDto, User user, ItemRequest itemRequest) {
         return Item.builder()
                 .id(itemDto.getId())
                 .owner(user)
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
+                .request(itemRequest)
+                .build();
+    }
+
+    public static ItemDto mapToItemWithBookingAndComments(ItemDtoWithBookingAndComments itemDtoWithBooking) {
+        return ItemDto.builder()
+                .id(itemDtoWithBooking.getId())
+                .name(itemDtoWithBooking.getName())
+                .description(itemDtoWithBooking.getDescription())
+                .available(itemDtoWithBooking.getAvailable())
                 .build();
     }
 
