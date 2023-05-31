@@ -63,7 +63,6 @@ class ItemServiceTest {
     public void addTest() {
 
         ItemDto itemDto = ItemDto.builder().name("Item").description("Item items").available(true).requestId(null).build();
-
         Mockito.when(userRepository.findById(Mockito.any()))
                 .thenReturn(Optional.of(user));
         Mockito.when(itemRepository.save(Mockito.any(Item.class)))
