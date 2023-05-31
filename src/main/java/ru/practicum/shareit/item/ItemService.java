@@ -1,14 +1,19 @@
 package ru.practicum.shareit.item;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.Comment.CommentService;
-import ru.practicum.shareit.Comment.dto.CommentDto;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDtoWithDate;
+import ru.practicum.shareit.comment.CommentService;
+import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.NotStateException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
@@ -17,27 +22,33 @@ import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class ItemService {
-    private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
-    private final BookingRepository bookingRepository;
-    private final CommentService commentService;
-    private final ItemRequestService itemRequestService;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
+    @Autowired
+    private CommentService commentService;
+    @Autowired
+    private ItemRequestService itemRequestService;
+    @Autowired
+    private UserService userService;
 
 
     public ItemDto add(ItemDto itemDto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
         ItemRequest itemRequest = null;
         if (itemDto.getRequestId() != null) {
             itemRequest = ItemRequestMapper.mapToItemRequest(itemRequestService.getRequestId(userId, itemDto.getRequestId()), user);
@@ -50,8 +61,7 @@ public class ItemService {
 
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
         ItemDto itemDtoOld = ItemMapper.mapToItemWithBookingAndComments(getByItemId(userId, itemId));
         if (itemDto.getName() != null) {
             itemDtoOld.setName(itemDto.getName());
@@ -65,12 +75,12 @@ public class ItemService {
         if (itemDto.getRequestId() != null) {
             itemDtoOld.setRequestId(itemDto.getRequestId());
         }
+        log.info("Обавлена вещь {}", itemDto);
         return add(itemDtoOld, userId);
     }
 
     public ItemDtoWithBookingAndComments getByItemId(Long userId, Long itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
         BookingDtoWithDate bookingLast = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdLast(userId, itemId, LocalDateTime.now()));
         BookingDtoWithDate bookingNext = BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdNext(userId, itemId, LocalDateTime.now()));
         List<CommentDto> comments = commentService.getCommentsByItemId(itemId);
@@ -78,28 +88,24 @@ public class ItemService {
         return ItemMapper.mapToItemDtoWithBookingAndComments(item, bookingLast, bookingNext, comments);
     }
 
-    public List<ItemDtoWithBookingAndComments> getAllItemByUser(Long userId) {
+    public List<ItemDtoWithBookingAndComments> getAllItemByUser(Long userId, Integer from, Integer size) {
+        Pageable page = paged(from, size);
         HashMap<Long, BookingDtoWithDate> bookingsLast = new HashMap<>();
         HashMap<Long, BookingDtoWithDate> bookingsNext = new HashMap<>();
         HashMap<Long, List<CommentDto>> comments = new HashMap<>();
-        List<Item> items = itemRepository.findByOwnerId(userId);
+        List<Item> items = itemRepository.findByOwnerId(userId, page);
         for (Item i : items) {
             bookingsLast.put(i.getId(), BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdLast(userId, i.getId(), LocalDateTime.now())));
             bookingsNext.put(i.getId(), BookingMapper.mapToBookingWithoutDate(bookingRepository.findByItemIdNext(userId, i.getId(), LocalDateTime.now())));
             comments.put(i.getId(), commentService.getCommentsByItemId(i.getId()));
         }
-        log.info("Запрошены вещи владельца с ID={}", userId);
         return ItemMapper.mapToItemDtoWithBookingAndComments(items, bookingsLast, bookingsNext, comments);
     }
 
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
         if (!text.isEmpty()) {
-            List<ItemDto> listSearch = new ArrayList<>();
-            for (Item item : itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text, true)) {
-                listSearch.add(ItemMapper.toItemDto(item));
-            }
-            log.info("Запрошен поиск по строке {},найдено {}", text, listSearch.size());
-            return listSearch;
+            Pageable page = paged(from, size);
+            return ItemMapper.toItemDto(itemRepository.search(text, page));
         } else {
             return List.of();
         }
@@ -122,4 +128,21 @@ public class ItemService {
             throw new NotFoundException("Невозможно обновить вещь.");
         }
     }
+
+    public Pageable paged(Integer from, Integer size) {
+        if (from != null && size != null) {
+            if (from < 0) {
+                throw new NotStateException("Номер первого элемента неможет быть отрицательным.");
+            }
+            return PageRequest.of(from > 0 ? from / size : 0, size);
+        } else {
+            return PageRequest.of(0, 4);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Item findById(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
+    }
+
 }

@@ -1,12 +1,14 @@
 package ru.practicum.shareit.booking;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingShort;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.NotStateException;
@@ -14,6 +16,7 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -21,24 +24,34 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Transactional
 @Slf4j
 public class BookingService {
-    private final BookingRepository bookingRepository;
-    private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserService userService;
 
-    public BookingDto add(Long userId, BookingDto bookingDto) {
+    public BookingDto add(Long userId, BookingShort bookingShort) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " при добавление бронирования не найден!"));
-        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new NotFoundException("Вещь с ID=" + bookingDto.getItemId() + " при добавление бронирования не найдена!"));
+        Item item = itemRepository.findById(bookingShort.getItemId()).orElseThrow(() -> new NotFoundException("Вещь с ID=" + bookingShort.getItemId() + " при добавление бронирования не найдена!"));
         if (!item.getOwner().equals(user)) {
-            Booking booking = BookingMapper.toBooking(bookingDto, item, user);
-            validation(booking, userId);
-            booking.setBookingStatus(BookingStatus.WAITING);
-            bookingRepository.save(booking);
-            log.info("Добавлено бронирование {}", booking);
-            return BookingMapper.toBookingDto(booking);
+            BookingDto bookingDto = BookingDto.builder()
+                    .start(bookingShort.getStart())
+                    .end(bookingShort.getEnd())
+                    .booker(user)
+                    .item(item)
+                    .status(BookingStatus.WAITING)
+                    .build();
+
+            validation(bookingDto, userId);
+            log.info("Добавлено бронирование {}", bookingDto);
+            return BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking(bookingDto, item, user)));
         } else {
             throw new NotFoundException("Пользователь не владелец предмета бронирования.");
         }
@@ -138,7 +151,7 @@ public class BookingService {
         }
     }
 
-    void validation(Booking booking, Long ownerId) {
+    void validation(BookingDto booking, Long ownerId) {
         if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())) {
             log.info("Указаны неправильные даты бронирования.");
             throw new ValidationException("Указаны неправильные даты бронирования.");
@@ -147,17 +160,12 @@ public class BookingService {
             log.info("Вещь недоступна для аренды.");
             throw new ValidationException("Вещь недоступна для аренды.");
         }
-        if (booking.getItem() == null
-                || booking.getBooker() == null) {
-            log.info("Не указан пользователь или вещь.");
-            throw new NotFoundException("Не указан пользователь или вещь.");
-        }
         if (booking.getStart() == null || booking.getEnd() == null
                 || booking.getEnd().isBefore(booking.getStart())) {
             log.info("Неуказаны даты бронирования.");
             throw new ValidationException("Неуказаны даты бронирования.");
         }
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
+        if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())) {
             log.info("Неправильные даты бронирования");
             throw new NotFoundException("Неправильные даты бронирования");
         }

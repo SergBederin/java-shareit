@@ -1,8 +1,10 @@
 package ru.practicum.shareit.user;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -14,9 +16,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
+
 public class UserService {
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     public List<UserDto> getAll() {
         log.info("Запрос на получение всех пользователей выполнен");
@@ -30,10 +34,8 @@ public class UserService {
     }
 
     public UserDto add(UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        userRepository.save(user);
-        log.info("Добавлен пользователь = {}", user);
-        return getById(user.getId());
+        log.info("Добавлен пользователь = {}", userDto);
+        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
     public UserDto update(Long userId, UserDto userDto) {
@@ -66,5 +68,10 @@ public class UserService {
         } else {
             throw new ConflictException("Дублируются Email пользователей.");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public User findById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
     }
 }

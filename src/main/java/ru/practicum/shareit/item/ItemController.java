@@ -3,8 +3,8 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.Comment.CommentService;
-import ru.practicum.shareit.Comment.dto.CommentDto;
+import ru.practicum.shareit.comment.CommentService;
+import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 
@@ -25,9 +25,9 @@ public class ItemController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<ItemDtoWithBookingAndComments> getByUserId(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDtoWithBookingAndComments> getByUserId(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) {
         log.info("Выполняется запрос GET/items на получение вещей пользователя с id= {}", userId);
-        return itemService.getAllItemByUser(userId);
+        return itemService.getAllItemByUser(userId, from, size);
     }
 
     @GetMapping("/{itemId}")
@@ -37,9 +37,9 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@NotBlank @RequestParam String text) {
+    public List<ItemDto> searchItem(@NotBlank @RequestParam String text, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) {
         log.info("Выполняется запрос GET/items/search на поиск  {}", text);
-        return itemService.search(text);
+        return itemService.search(text, from, size);
     }
 
     @PostMapping

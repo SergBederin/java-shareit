@@ -1,7 +1,8 @@
 package ru.practicum.shareit.request;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,14 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class ItemRequestService {
-    private final ItemRequestRepository itemRequestRepository;
-    private final ItemRepository itemRepository;
-    private final UserService userService;
+    @Autowired
+    private ItemRequestRepository itemRequestRepository;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private UserService userService;
 
     public ItemRequestDto addRequest(Long userId, ItemRequestDto itemRequestDto) {
         User user = validationUser(userId);
@@ -34,7 +38,6 @@ public class ItemRequestService {
         if (itemRequestDto.getCreated() == null) {
             itemRequestDto.setCreated(LocalDateTime.now());
         }
-        //itemRequestDto.setCreated(LocalDateTime.now());
         log.info("Добавлен новый запрос на вещь {}, пользователя {}", itemRequestDto, user);
         return ItemRequestMapper.mapToItemRequestDto(itemRequestRepository.save(ItemRequestMapper.mapToItemRequest(itemRequestDto, user)));
     }
