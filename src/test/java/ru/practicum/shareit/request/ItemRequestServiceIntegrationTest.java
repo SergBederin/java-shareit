@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 @Transactional
 @SpringBootTest(
-        properties = "spring.datasource.username=postgres",
+        properties = "spring.datasource.username=test",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemRequestServiceIntegrationTest {
