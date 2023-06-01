@@ -8,11 +8,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.comment.CommentService;
 import ru.practicum.shareit.comment.dto.CommentDto;
+import ru.practicum.shareit.exception.NotStateException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -90,5 +94,24 @@ class ItemServiceTest {
                 .thenReturn(Optional.of(item));
         ItemDto itemResult = ItemMapper.mapToItemWithBookingAndComments(itemService.getByItemId(1L, 1L));
         Assertions.assertEquals(itemResult, ItemMapper.toItemDto(item));
+    }
+
+    @Test
+    void pagedTest() {
+        Pageable page = PageRequest.of(0, 4);
+        Assertions.assertEquals(page, itemService.paged(0, 4));
+    }
+
+    //Reaction to erroneous data
+    @Test
+    void searchErrTest() {
+        Assertions.assertEquals(List.of(), itemService.search("test", 0, 4));
+    }
+
+    @Test
+    void pagedErrTest() {
+        final NotStateException exception = assertThrows(NotStateException.class, () -> itemService.paged(-1, 4));
+
+        Assertions.assertEquals(exception.getMessage(), "Номер первого элемента неможет быть отрицательным.");
     }
 }

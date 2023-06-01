@@ -1,7 +1,8 @@
 package ru.practicum.shareit.comment;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -15,11 +16,15 @@ import java.util.List;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
+@NoArgsConstructor
+
 @Slf4j
 public class CommentService {
-    private final CommentRepository commentRepository;
-    private final BookingRepository bookingRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
 
     public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
         Booking booking = bookingRepository.getBookingByBookerIdAndItemId(userId, itemId, LocalDateTime.now());

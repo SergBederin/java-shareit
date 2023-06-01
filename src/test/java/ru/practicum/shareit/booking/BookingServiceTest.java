@@ -8,10 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShort;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -25,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
@@ -164,5 +167,25 @@ class BookingServiceTest {
         Assertions.assertEquals(listBookingDto, bookingService.getByIdOwnerBookingItems(1L, "FUTURE", 0, 4));
         Assertions.assertEquals(listBookingDto, bookingService.getByIdOwnerBookingItems(1L, "WAITING", 0, 4));
         Assertions.assertEquals(listBookingDto, bookingService.getByIdOwnerBookingItems(1L, "REJECTED", 0, 4));
+    }
+
+    @Test
+    void pagedTest() {
+        Pageable page = PageRequest.of(0, 4);
+
+        Assertions.assertEquals(page, bookingService.paged(0, 4));
+    }
+
+    @Test
+    void validationTest() {
+        Item itemErr = Item.builder().id(1L).owner(owner).name("Item").description("Item items").available(false).request(null).build();
+        BookingDto bookingDtoErrOne = BookingDto.builder().start(end).end(start).status(BookingStatus.WAITING).booker(user).item(item).build();
+        BookingDto bookingDtoErrTwo = BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(itemErr).build();
+
+        final ValidationException exceptionOne = assertThrows(ValidationException.class, () -> bookingService.validation(bookingDtoErrOne, 1L));
+        final ValidationException exceptionTwo = assertThrows(ValidationException.class, () -> bookingService.validation(bookingDtoErrTwo, 1L));
+
+        Assertions.assertEquals(exceptionOne.getMessage(), "Указаны неправильные даты бронирования.");
+        Assertions.assertEquals(exceptionTwo.getMessage(), "Вещь недоступна для аренды.");
     }
 }
