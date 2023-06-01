@@ -17,8 +17,10 @@ import ru.practicum.shareit.comment.CommentService;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.exception.NotStateException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -28,6 +30,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -41,11 +44,14 @@ class ItemServiceTest {
     private BookingRepository bookingRepository;
     @Mock
     private CommentService commentService;
+    @Mock
+    private UserService userService;
 
     static User user;
     static UserDto userDto;
     static User owner;
     static Item item;
+    static ItemDto itemDto;
     static Booking booking;
     static List<CommentDto> listCommentDto;
     static LocalDateTime start;
@@ -57,6 +63,7 @@ class ItemServiceTest {
         userDto = UserDto.builder().id(1L).name("User").email("user@user.ru").build();
         owner = User.builder().id(2L).name("Owner").email("owner@user.ru").build();
         item = Item.builder().owner(owner).name("Item").description("Item items").available(true).request(null).build();
+        itemDto = ItemDto.builder().name("Item").description("Item items").available(true).build();
         start = LocalDateTime.now();
         end = LocalDateTime.now().plusMinutes(1);
         booking = Booking.builder().start(start).end(end).item(item).booker(user).bookingStatus(BookingStatus.WAITING).build();
@@ -94,6 +101,20 @@ class ItemServiceTest {
                 .thenReturn(Optional.of(item));
         ItemDto itemResult = ItemMapper.mapToItemWithBookingAndComments(itemService.getByItemId(1L, 1L));
         Assertions.assertEquals(itemResult, ItemMapper.toItemDto(item));
+    }
+
+    @Test
+    void getByUserIdTest() {
+        Mockito.when(userRepository.findById(Mockito.any()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(itemRepository.save(Mockito.any(Item.class)))
+                .thenReturn(item);
+        userService.add(userDto);
+        itemService.add(itemDto, 1L);
+
+        List<ItemDtoWithBookingAndComments> itemDtoWithBookingAndCommentsList = itemService.getAllItemByUser(1L, 0, 10);
+
+        Assertions.assertEquals(itemDtoWithBookingAndCommentsList, itemService.getAllItemByUser(1L, 0, 4));
     }
 
     @Test

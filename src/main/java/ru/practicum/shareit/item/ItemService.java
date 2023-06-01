@@ -31,6 +31,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@Transactional
 @NoArgsConstructor
 public class ItemService {
     @Autowired
@@ -45,7 +46,6 @@ public class ItemService {
     private ItemRequestService itemRequestService;
     @Autowired
     private UserService userService;
-
 
     public ItemDto add(ItemDto itemDto, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
@@ -118,7 +118,7 @@ public class ItemService {
         }
     }
 
-    private void validateForUpdate(Item item, Long userId) {
+  /*  private void validateForUpdate(Item item, Long userId) {
         if (itemRepository.findById(item.getId()).isEmpty() || userRepository.findById(userId).isEmpty()) {
             log.info("Невозможно обновить. Запрошеная вещь не найдена id={}", item.getId());
             throw new NotFoundException("Невозможно обновить вещь.");
@@ -127,7 +127,7 @@ public class ItemService {
             log.info("Невозможно обновить. Собственники у вещи разные id={}", item.getId());
             throw new NotFoundException("Невозможно обновить вещь.");
         }
-    }
+    }*/
 
     public Pageable paged(Integer from, Integer size) {
         if (from != null && size != null) {
