@@ -1,17 +1,15 @@
 package ru.practicum.shareit.comment;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
-import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.model.Comment;
-import ru.practicum.shareit.comment.CommentRepository;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -34,7 +32,7 @@ class CommentServiceTest {
     static LocalDateTime start;
     static LocalDateTime end;
     static Booking booking;
-   //static CommentShort commentShort;
+    //static CommentShort commentShort;
     static CommentDto commentDto;
     static List<Comment> listComment;
     static Comment comment;
@@ -52,22 +50,22 @@ class CommentServiceTest {
         end = LocalDateTime.now().plusMinutes(1);
 
         booking = Booking.builder().start(start).end(end).item(item).booker(user).bookingStatus(BookingStatus.WAITING).build();
-       // commentShort = CommentShort.builder().text("Text test").created(start).build();
+        // commentShort = CommentShort.builder().text("Text test").created(start).build();
         commentDto = CommentDto.builder().text("Text test").authorName(user.getName()).created(start).build();
         listComment = List.of(Comment.builder().text("Text test").item(item).user(user).created(start).build());
         comment = Comment.builder().text("Text test").item(item).user(user).created(start).build();
     }
 
     //normal behavior
-   // @Test
-   // void addCommentTest() {
+    // @Test
+    // void addCommentTest() {
     //    Mockito.when(bookingRepository.getBookingByBookerIdAndItemId(1L, 1L, start))
     //            .thenReturn(booking);
-      //  Mockito.when(commentRepository.save(comment))
-       //         .thenReturn(comment);
+    //  Mockito.when(commentRepository.save(comment))
+    //         .thenReturn(comment);
 
-     //   Assertions.assertEquals(commentDto, commentService.addComment(1L, 1L, commentDto));
-   // }
+    //   Assertions.assertEquals(commentDto, commentService.addComment(1L, 1L, commentDto));
+    // }
 
     @Test
     void getCommentsByItemIdTest() {
@@ -86,4 +84,5 @@ class CommentServiceTest {
         final ValidationException exception = assertThrows(ValidationException.class, () -> commentService.addComment(1L, 1L, commentDto));
 
         Assertions.assertEquals(exception.getMessage(), "Бронирования на вещь с id =" + 1L + " у пользователя с id = " + 1L + " не найдена.");
-    }}
+    }
+}
