@@ -21,12 +21,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
 
+
 class ItemRequestServiceTest {
     static ItemRequestService itemRequestService = new ItemRequestService();
 
     static ItemRepository itemRepository = Mockito.mock(ItemRepository.class);
     static ItemRequestRepository itemRequestRepository = Mockito.mock(ItemRequestRepository.class);
     static UserService userService = Mockito.mock(UserService.class);
+
     static User user;
     static User user1;
     static UserDto userDto;
@@ -123,4 +125,24 @@ class ItemRequestServiceTest {
         ItemRequestDto itemRequestResultDto = itemRequestService.getRequestId(1L, 1L);
         Assertions.assertEquals(itemRequestResultDto.getId(), 1);
     }
+   /* @Test
+  //  void findByIdErrTest() {
+  //      Mockito.when(itemRequestRepository.findById(anyLong()))
+  //              .thenReturn(Optional.of(request));
+  //      final NotStateException exception = orElseThrow(NotStateException.class, () -> itemRequestRepository.findById(10L));
+        // final NotStateException exception = itemRequestRepository.findById(10L)
+          //      .orElseThrow(() -> new NotRequestException("Запрос c id =" + 10L + " не найден."));
+   //     assertEquals(exception.getMessage(), "Запрос c id =" + 10L + " не найден.");
+   // }*/
+
+   /* @Test
+    void addRequestErrTest() {
+        //  LocalDateTime start = LocalDateTime.now();
+        //  User user = User.builder().id(1L).name("User").email("user@user.ru").build();
+        //  ItemRequest itemRequest = ItemRequest.builder().id(1L).description("Test").created(start).requestor(user).build();
+         //Mockito.when(itemRequestRepository.findById(10L))
+         //       .thenReturn(10L);
+        final NotRequestException exception = assertThrows(NotRequestException.class, () -> itemRequestService.getRequestId(10L, 1L));
+        assertEquals(exception.getMessage(), "Запрос не найден.");
+    }*/
 }

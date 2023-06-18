@@ -6,16 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotRequestException;
 import ru.practicum.shareit.exception.NotStateException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,6 +41,7 @@ public class ItemRequestService {
         return ItemRequestMapper.mapToItemRequestDto(itemRequestRepository.save(ItemRequestMapper.mapToItemRequest(itemRequestDto, user)));
     }
 
+    @Transactional(readOnly = true)
     public List<ItemRequestDto> getRequest(Long userId) {
         validationUser(userId);
         List<ItemRequestDto> listItemRequestDto = ItemRequestMapper.mapToItemRequestDto(itemRequestRepository.findItemRequestByRequestor_Id(userId));
@@ -52,6 +52,7 @@ public class ItemRequestService {
         return listItemRequestDto;
     }
 
+    @Transactional(readOnly = true)
     public List<ItemRequestDto> getRequestAll(Long userId, Integer from, Integer size) {
         if (from == null || size == null) {
             return List.of();
@@ -69,16 +70,21 @@ public class ItemRequestService {
         }
     }
 
+    @Transactional(readOnly = true)
     public ItemRequestDto getRequestId(Long userId, Long requestId) {
         validationUser(userId);
         ItemRequestDto itemRequestDto = ItemRequestMapper.mapToItemRequestDto(itemRequestRepository.findById(requestId)
-                .orElseThrow(() -> new NotRequestException("Запрос c id =" + requestId + " не найден.")));
+                .orElseThrow(() -> new NotRequestException("Запрос не найден.")));
         itemRequestDto.setItems(ItemMapper.toItemDto(itemRepository.findItemByRequest_Id(requestId)));
         log.info("Получены данные об одном запросе c id = {}, вместе с данными об ответах на него.", requestId);
         return itemRequestDto;
     }
 
+    //User validationUser(Long userId) {
+    //   return UserMapper.toUser(userService.getById(userId));
+    //}
     User validationUser(Long userId) {
-        return UserMapper.toUser(userService.getById(userId));
+        return userService.findById(userId);
     }
 }
+

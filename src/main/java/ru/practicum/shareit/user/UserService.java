@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.ConflictException;
+//import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -62,13 +62,13 @@ public class UserService {
         log.info("Удален пользователь id={}", userId);
     }
 
-    private boolean validateEmail(User user) {
+    /* private boolean validateEmail(User user) {
         if (!userRepository.existsByEmail(user.getEmail())) {
             return true;
         } else {
             throw new ConflictException("Дублируются Email пользователей.");
         }
-    }
+    }*/
 
     @Transactional(readOnly = true)
     public User findById(Long userId) {
