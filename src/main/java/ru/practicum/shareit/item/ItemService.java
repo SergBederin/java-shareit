@@ -140,9 +140,9 @@ public class ItemService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public Item findById(Long itemId) {
-        return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
-    }
+    //   @Transactional(readOnly = true)
+   // public Item findById(Long itemId) {
+    //    return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
+   // }
 
 }
