@@ -7,7 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.NotRequestException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.NotStateException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
@@ -74,7 +74,8 @@ public class ItemRequestService {
     public ItemRequestDto getRequestId(Long userId, Long requestId) {
         validationUser(userId);
         ItemRequestDto itemRequestDto = ItemRequestMapper.mapToItemRequestDto(itemRequestRepository.findById(requestId)
-                .orElseThrow(() -> new NotRequestException("Запрос не найден.")));
+                //.orElseThrow(() -> new NotRequestException("Запрос не найден.")));
+                .orElseThrow(() -> new NotFoundException("Запрос не найден.")));
         itemRequestDto.setItems(ItemMapper.toItemDto(itemRepository.findItemByRequest_Id(requestId)));
         log.info("Получены данные об одном запросе c id = {}, вместе с данными об ответах на него.", requestId);
         return itemRequestDto;
