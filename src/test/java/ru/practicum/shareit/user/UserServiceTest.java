@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -15,13 +17,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    static UserService userService = new UserService();
-    static UserRepository userRepository = Mockito.mock(UserRepository.class);
+    //static UserService userService = new UserService();
+    //static UserRepository userRepository = Mockito.mock(UserRepository.class);
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
     static User user;
     static User user1;
     static UserDto userDto;
@@ -83,5 +90,23 @@ class UserServiceTest {
     void findByIdErrTest() {
         final NotFoundException exception = assertThrows(NotFoundException.class, () -> userService.findById(10L));
         assertEquals(exception.getMessage(), "Пользователь с ID=" + 10L + " не найден!");
+    }
+
+    @Test
+    void getByUserIdErrTest() {
+        Mockito.when(userRepository.findById(anyLong()))
+                .thenThrow(NotFoundException.class);
+        final NotFoundException exception = assertThrows(NotFoundException.class, () -> userService.getById(10L));
+        assertNull(exception.getMessage());
+    }
+
+    @Test
+    public void deleteUserByIdTest() {
+        Mockito.when(userRepository.findById(Mockito.any()))
+                .thenReturn(Optional.of(user));
+        userService.delete(1L);
+        Mockito
+                .verify(userRepository, Mockito.times(1))
+                .deleteById(1L);
     }
 }
