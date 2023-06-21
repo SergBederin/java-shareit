@@ -14,7 +14,6 @@ import ru.practicum.shareit.comment.CommentService;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.NotStateException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingAndComments;
 import ru.practicum.shareit.item.model.Item;
@@ -48,19 +47,20 @@ public class ItemService {
     private UserService userService;
 
     public ItemDto add(ItemDto itemDto, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
+        //User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
+        User user = userService.findById(userId);
         ItemRequest itemRequest = null;
         if (itemDto.getRequestId() != null) {
             itemRequest = ItemRequestMapper.mapToItemRequest(itemRequestService.getRequestId(userId, itemDto.getRequestId()), user);
         }
         Item item = ItemMapper.toItem(itemDto, user, itemRequest);
-        validate(item);
+        //validate(item);
         log.info("Добавлена вещь {}", item);
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
-
+        validateExistUser(userId);
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
         ItemDto itemDtoOld = ItemMapper.mapToItemWithBookingAndComments(getByItemId(userId, itemId));
         if (itemDto.getName() != null) {
@@ -102,6 +102,12 @@ public class ItemService {
         return ItemMapper.mapToItemDtoWithBookingAndComments(items, bookingsLast, bookingsNext, comments);
     }
 
+    @Transactional(readOnly = true)
+    public Item getById(Long itemId) {
+        return itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
+    }
+
     public List<ItemDto> search(String text, Integer from, Integer size) {
         if (!text.isEmpty()) {
             Pageable page = paged(from, size);
@@ -111,11 +117,14 @@ public class ItemService {
         }
     }
 
-    private void validate(Item item) {
-        if (item.getOwner() == null) {
-            log.info("Неуказан собственник вещи с {} ", item);
-            throw new ValidationException("Неуказан собственник вещи");
-        }
+    /* private void validate(Item item) {
+         if (item.getOwner() == null) {
+             log.info("Неуказан собственник вещи с {} ", item);
+             throw new ValidationException("Неуказан собственник вещи");
+         }
+     }*/
+    void validateExistUser(Long userId) {
+        userService.findById(userId);
     }
 
   /*  private void validateForUpdate(Item item, Long userId) {
@@ -141,8 +150,8 @@ public class ItemService {
     }
 
     //   @Transactional(readOnly = true)
-   // public Item findById(Long itemId) {
+    // public Item findById(Long itemId) {
     //    return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
-   // }
+    // }
 
 }

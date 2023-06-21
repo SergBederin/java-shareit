@@ -5,9 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-//import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -54,10 +52,10 @@ public class UserService {
     }
 
     public void delete(Long userId) {
-        if (userId == null) {
-            throw new ValidationException("Передан пустой аргумент!");
-        }
-        getById(userId);
+        //if (userId == null) {
+        //    throw new ValidationException("Передан пустой аргумент!");
+        //}
+        //getById(userId);
         userRepository.deleteById(userId);
         log.info("Удален пользователь id={}", userId);
     }

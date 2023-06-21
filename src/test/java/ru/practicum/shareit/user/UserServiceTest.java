@@ -102,8 +102,8 @@ class UserServiceTest {
 
     @Test
     public void deleteUserByIdTest() {
-        Mockito.when(userRepository.findById(Mockito.any()))
-                .thenReturn(Optional.of(user));
+        //Mockito.when(userRepository.findById(Mockito.any()))
+        //        .thenReturn(Optional.of(user));
         userService.delete(1L);
         Mockito
                 .verify(userRepository, Mockito.times(1))

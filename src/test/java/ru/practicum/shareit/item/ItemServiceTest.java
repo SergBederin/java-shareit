@@ -74,8 +74,8 @@ class ItemServiceTest {
     public void addTest() {
 
         ItemDto itemDto = ItemDto.builder().name("Item").description("Item items").available(true).requestId(null).build();
-        Mockito.when(userRepository.findById(Mockito.any()))
-                .thenReturn(Optional.of(user));
+      //  Mockito.when(userRepository.findById(Mockito.any()))
+       //         .thenReturn(Optional.of(user));
         Mockito.when(itemRepository.save(Mockito.any(Item.class)))
                 .thenReturn(item);
         ItemDto itemResult = itemService.add(itemDto, userDto.getId());
@@ -105,8 +105,8 @@ class ItemServiceTest {
 
     @Test
     void getByUserIdTest() {
-        Mockito.when(userRepository.findById(Mockito.any()))
-                .thenReturn(Optional.of(user));
+        //Mockito.when(userRepository.findById(Mockito.any()))
+        //        .thenReturn(Optional.of(user));
         Mockito.when(itemRepository.save(Mockito.any(Item.class)))
                 .thenReturn(item);
         userService.add(userDto);
@@ -123,7 +123,6 @@ class ItemServiceTest {
         Assertions.assertEquals(page, itemService.paged(0, 4));
     }
 
-    //Reaction to erroneous data
     @Test
     void searchErrTest() {
         Assertions.assertEquals(List.of(), itemService.search("test", 0, 4));
