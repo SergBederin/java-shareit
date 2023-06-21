@@ -22,11 +22,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    //static UserService userService = new UserService();
-    //static UserRepository userRepository = Mockito.mock(UserRepository.class);
     @Mock
     private UserRepository userRepository;
-
     @InjectMocks
     private UserService userService;
     static User user;
@@ -46,6 +43,7 @@ class UserServiceTest {
         Mockito.when(userRepository.findAll())
                 .thenReturn(List.of(user, user1));
         List<UserDto> usersResult = userService.getAll();
+
         Assertions.assertEquals(usersResult.size(), 2);
         Assertions.assertEquals(usersResult, List.of(user, user1).stream().map(UserMapper::toUserDto)
                 .collect(Collectors.toList()));
@@ -56,6 +54,7 @@ class UserServiceTest {
         Mockito.when(userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
         UserDto resultUser = userService.getById(1L);
+
         Assertions.assertEquals(resultUser.getId(), 1);
         Assertions.assertEquals(resultUser.getName(), user.getName());
         Assertions.assertEquals(resultUser.getEmail(), user.getEmail());
@@ -66,6 +65,7 @@ class UserServiceTest {
         Mockito.when(userRepository.save(Mockito.any(User.class)))
                 .thenReturn(user);
         UserDto resultUser = userService.add(userDto);
+
         assertEquals(userDto, resultUser);
     }
 
@@ -81,6 +81,7 @@ class UserServiceTest {
         userDto.setName("UpdUser");
         userDto.setEmail("upd@user.com");
         UserDto resultUser = userService.update(1L, userDto);
+
         Assertions.assertEquals(resultUser.getId(), 1);
         Assertions.assertEquals(resultUser.getName(), userDto.getName());
         Assertions.assertEquals(resultUser.getEmail(), userDto.getEmail());
@@ -102,8 +103,6 @@ class UserServiceTest {
 
     @Test
     public void deleteUserByIdTest() {
-        //Mockito.when(userRepository.findById(Mockito.any()))
-        //        .thenReturn(Optional.of(user));
         userService.delete(1L);
         Mockito
                 .verify(userRepository, Mockito.times(1))

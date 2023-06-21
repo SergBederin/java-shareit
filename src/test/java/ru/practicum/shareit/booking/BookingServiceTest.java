@@ -28,32 +28,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
-//@ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
-    //@InjectMocks
-    // private BookingService bookingService;
     static BookingService bookingService = new BookingService();
-    // @Mock
-    //private BookingRepository bookingRepository;
     static BookingRepository bookingRepository = Mockito.mock(BookingRepository.class);
-
     static UserService userService = Mockito.mock(UserService.class);
     static ItemService itemService = Mockito.mock(ItemService.class);
-    //  @Mock
-    //  private UserService userService;
-    // @Mock
-    ///  private UserRepository userRepository;
-    //  @Mock
-    // private ItemService itemService;
-    // @Mock
-    // private ItemRepository itemRepository;
-
     static User user;
     static UserDto userDto;
     static User owner;
     static Item item;
     static ItemDto itemDto;
-
     static BookingDto bookingDto;
     static Booking booking;
     static LocalDateTime start;
@@ -70,10 +54,8 @@ class BookingServiceTest {
         owner = User.builder().id(2L).name("Owner").email("owner@user.ru").build();
         item = Item.builder().id(1L).owner(owner).name("Item").description("Item items").available(true).request(null).build();
         itemDto = ItemDto.builder().id(1L).name("Item").description("Item items").available(true).requestId(null).build();
-
         start = LocalDateTime.of(2020, 5, 5, 14, 25, 11);
         end = LocalDateTime.of(2025, 5, 5, 14, 27, 11);
-
         bookingDto = BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(item).build();
         booking = Booking.builder().start(start).end(end).item(item).booker(user).bookingStatus(BookingStatus.WAITING).build();
     }
@@ -82,12 +64,8 @@ class BookingServiceTest {
     void addTest() {
         BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(1L).build();
 
-        //Mockito.when(userRepository.findById(any()))
-        //        .thenReturn(Optional.of(user));
         Mockito.when(userService.findById(any()))
                 .thenReturn(user);
-        // Mockito.when(itemRepository.findById(any()))
-        //         .thenReturn(Optional.of(item));
         Mockito.when(itemService.getById(any()))
                 .thenReturn(item);
         Mockito.when(bookingRepository.save(any(Booking.class)))
@@ -95,6 +73,7 @@ class BookingServiceTest {
         userService.add(userDto);
         itemService.add(itemDto, 1L);
         BookingDto bookingDtoResult = bookingService.add(user.getId(), bookingShort);
+
         Assertions.assertEquals(bookingDto, bookingDtoResult);
     }
 
@@ -108,8 +87,8 @@ class BookingServiceTest {
                 .thenReturn(bookingOptional);
         Mockito.when(bookingRepository.save(any(Booking.class)))
                 .thenReturn(bookingApproved);
-        Assertions.assertEquals(bookingDtoApproved, bookingService.bookingConfirm(owner.getId(), 1L, true));
 
+        Assertions.assertEquals(bookingDtoApproved, bookingService.bookingConfirm(owner.getId(), 1L, true));
     }
 
     @Test
@@ -129,8 +108,6 @@ class BookingServiceTest {
         List<BookingDto> listBookingDto = List.of(BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(item).build());
         List<Booking> listBooking = List.of(Booking.builder().start(start).end(end).item(item).booker(user).bookingStatus(BookingStatus.WAITING).build());
 
-        // Mockito.when(userRepository.findById(any()))
-        //         .thenReturn(Optional.of(user));
         Mockito.when(bookingRepository.getBookingByBookerIdAll(1L, Pageable.ofSize(4)))
                 .thenReturn(listBooking);
         Mockito.when(bookingRepository.getBookingByUserIdAndBookingStatusCurrent(anyLong(), any(), any()))
@@ -156,8 +133,7 @@ class BookingServiceTest {
     void getByIdOwnerBookingItemsTest() {
         List<BookingDto> listBookingDto = List.of(BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(item).build());
         List<Booking> listBooking = List.of(Booking.builder().start(start).end(end).item(item).booker(user).bookingStatus(BookingStatus.WAITING).build());
-        // Mockito.when(userRepository.findById(any()))
-        //        .thenReturn(Optional.of(owner));
+
         Mockito.when(bookingRepository.getBookingByOwnerIdAll(1L, Pageable.ofSize(4)))
                 .thenReturn(listBooking);
         Mockito.when(bookingRepository.getByItemOwnerIdAndBookingStatusCurrent(anyLong(), any(), any()))
@@ -203,9 +179,6 @@ class BookingServiceTest {
     public void bookingAddErrTest() {
         BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(1L).build();
 
-        //Mockito.when(bookingRepository.save(booking))
-        //         .thenReturn(booking);
-
         Mockito.when(userService.findById(anyLong()))
                 .thenReturn(owner);
 
@@ -219,10 +192,12 @@ class BookingServiceTest {
     @Test
     public void bookingConfirmErrTest() {
         Optional<Booking> bookingOptional = Optional.of(Booking.builder().id(1L).start(start).end(end).item(item).booker(user).bookingStatus(BookingStatus.APPROVED).build());
+
         Mockito.when(bookingRepository.findById(1L))
                 .thenReturn(bookingOptional);
         final NotFoundException exception = assertThrows(NotFoundException.class, () -> bookingService.bookingConfirm(user.getId(), 1L, true));
         final ValidationException exceptionTwo = assertThrows(ValidationException.class, () -> bookingService.bookingConfirm(owner.getId(), 1L, true));
+
         Assertions.assertEquals(exception.getMessage(), "При подтверждение бронирования вещь с ID=" + booking.getItem().getId() + " не найдена!");
         Assertions.assertEquals(exceptionTwo.getMessage(), "Бронирование уже подтверждено");
     }
@@ -268,6 +243,7 @@ class BookingServiceTest {
     @Test
     void pagedErrTest() {
         final NotStateException exception = assertThrows(NotStateException.class, () -> bookingService.paged(-1, 4));
+
         Assertions.assertEquals(exception.getMessage(), "Номер первого элемента неможет быть отрицательным.");
     }
 }

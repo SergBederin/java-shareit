@@ -74,11 +74,11 @@ class ItemServiceTest {
     public void addTest() {
 
         ItemDto itemDto = ItemDto.builder().name("Item").description("Item items").available(true).requestId(null).build();
-      //  Mockito.when(userRepository.findById(Mockito.any()))
-       //         .thenReturn(Optional.of(user));
+
         Mockito.when(itemRepository.save(Mockito.any(Item.class)))
                 .thenReturn(item);
         ItemDto itemResult = itemService.add(itemDto, userDto.getId());
+
         Assertions.assertEquals(itemResult, itemDto);
     }
 
@@ -86,12 +86,14 @@ class ItemServiceTest {
     void updateTest() {
         Item itemUpdate = Item.builder().owner(owner).name("Update").description("Update").available(false).request(null).build();
         ItemDto itemDtoUpdate = ItemDto.builder().name("Update").description("Update").available(false).requestId(null).build();
+
         Mockito.when(userRepository.findById(Mockito.any()))
                 .thenReturn(Optional.of(user));
         Mockito.when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
         Mockito.when(itemRepository.save(Mockito.any(Item.class)))
                 .thenReturn(itemUpdate);
+
         assertEquals(itemDtoUpdate, itemService.update(1L, 1L, itemDtoUpdate));
     }
 
@@ -100,13 +102,12 @@ class ItemServiceTest {
         Mockito.when(itemRepository.findById(Mockito.any()))
                 .thenReturn(Optional.of(item));
         ItemDto itemResult = ItemMapper.mapToItemWithBookingAndComments(itemService.getByItemId(1L, 1L));
+
         Assertions.assertEquals(itemResult, ItemMapper.toItemDto(item));
     }
 
     @Test
     void getByUserIdTest() {
-        //Mockito.when(userRepository.findById(Mockito.any()))
-        //        .thenReturn(Optional.of(user));
         Mockito.when(itemRepository.save(Mockito.any(Item.class)))
                 .thenReturn(item);
         userService.add(userDto);

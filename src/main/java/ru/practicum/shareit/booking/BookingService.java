@@ -41,10 +41,8 @@ public class BookingService {
     private ItemService itemService;
 
     public BookingDto add(Long userId, BookingShort bookingShort) {
-        //User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " при добавление бронирования не найден!"));
         User user = userService.findById(userId);
         Item item = itemService.getById(bookingShort.getItemId());
-        // Item item = itemRepository.findById(bookingShort.getItemId()).orElseThrow(() -> new NotFoundException("Вещь с ID=" + bookingShort.getItemId() + " при добавление бронирования не найдена!"));
         if (!item.getOwner().equals(user)) {
             BookingDto bookingDto = BookingDto.builder()
                     .start(bookingShort.getStart())
@@ -83,7 +81,6 @@ public class BookingService {
 
     public BookingDto getByIdBooking(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException("Бронирование с ID= " + bookingId + " не найдено!"));
-        //validation(booking, userId);
         if (Objects.equals(booking.getBooker().getId(), userId) || Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             log.info("Запрошено бронирование {} пользователя {}", bookingId, userId);
             return BookingMapper.toBookingDto(bookingRepository.getByIdBooking(bookingId, userId));
@@ -94,7 +91,6 @@ public class BookingService {
 
     public List<BookingDto> getByIdListBookings(Long userId, String state, Integer from, Integer size) {
         Pageable page = paged(from, size);
-        //userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + "не найден!"));
         validationExistUser(userId);
         try {
             StateStatus stateStatus = StateStatus.valueOf(state);
@@ -125,10 +121,8 @@ public class BookingService {
         }
     }
 
-    // @Transactional(readOnly = true)
     public List<BookingDto> getByIdOwnerBookingItems(Long userId, String state, Integer from, Integer size) {
         Pageable page = paged(from, size);
-        // userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + "не найден!"));
         validationExistUser(userId);
         try {
             StateStatus stateStatus = StateStatus.valueOf(state);
@@ -168,15 +162,6 @@ public class BookingService {
             log.info("Вещь недоступна для аренды.");
             throw new ValidationException("Вещь недоступна для аренды.");
         }
-       // if (booking.getStart() == null || booking.getEnd() == null
-        //        || booking.getEnd().isBefore(booking.getStart())) {
-        //    log.info("Неуказаны даты бронирования.");
-        //    throw new ValidationException("Неуказаны даты бронирования.");
-       // }
-       // if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())) {
-       //     log.info("Неправильные даты бронирования");
-       //     throw new NotFoundException("Неправильные даты бронирования");
-       // }
     }
 
     public Pageable paged(Integer from, Integer size) {

@@ -47,14 +47,12 @@ public class ItemService {
     private UserService userService;
 
     public ItemDto add(ItemDto itemDto, Long userId) {
-        //User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Вещь не добавлена. Указанный пользователь с ID=" + userId + " не найден!"));
         User user = userService.findById(userId);
         ItemRequest itemRequest = null;
         if (itemDto.getRequestId() != null) {
             itemRequest = ItemRequestMapper.mapToItemRequest(itemRequestService.getRequestId(userId, itemDto.getRequestId()), user);
         }
         Item item = ItemMapper.toItem(itemDto, user, itemRequest);
-        //validate(item);
         log.info("Добавлена вещь {}", item);
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
@@ -117,26 +115,9 @@ public class ItemService {
         }
     }
 
-    /* private void validate(Item item) {
-         if (item.getOwner() == null) {
-             log.info("Неуказан собственник вещи с {} ", item);
-             throw new ValidationException("Неуказан собственник вещи");
-         }
-     }*/
     void validateExistUser(Long userId) {
         userService.findById(userId);
     }
-
-  /*  private void validateForUpdate(Item item, Long userId) {
-        if (itemRepository.findById(item.getId()).isEmpty() || userRepository.findById(userId).isEmpty()) {
-            log.info("Невозможно обновить. Запрошеная вещь не найдена id={}", item.getId());
-            throw new NotFoundException("Невозможно обновить вещь.");
-        }
-        if (!itemRepository.findById(item.getId()).orElseThrow().getOwner().getId().equals(userId)) {
-            log.info("Невозможно обновить. Собственники у вещи разные id={}", item.getId());
-            throw new NotFoundException("Невозможно обновить вещь.");
-        }
-    }*/
 
     public Pageable paged(Integer from, Integer size) {
         if (from != null && size != null) {
@@ -148,10 +129,4 @@ public class ItemService {
             return PageRequest.of(0, 4);
         }
     }
-
-    //   @Transactional(readOnly = true)
-    // public Item findById(Long itemId) {
-    //    return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена!"));
-    // }
-
 }

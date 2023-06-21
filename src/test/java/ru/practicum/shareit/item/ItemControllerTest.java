@@ -120,7 +120,6 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(itemDto.getName())))
                 .andExpect(jsonPath("$.description", is(itemDto.getDescription())))
                 .andExpect(jsonPath("$.available", is(itemDto.getAvailable())))
-                //.andExpect(jsonPath("$.owner", is(itemDto.getOwner()), Long.class))
                 .andExpect(jsonPath("$.requestId", is(itemDto.getRequestId())));
     }
 
@@ -141,7 +140,6 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(itemDtoUpdate.getName())))
                 .andExpect(jsonPath("$.description", is(itemDtoUpdate.getDescription())))
                 .andExpect(jsonPath("$.available", is(itemDtoUpdate.getAvailable())))
-                //.andExpect(jsonPath("$.owner", is(itemDtoUpdate.getOwner()), Long.class))
                 .andExpect(jsonPath("$.requestId", is(itemDtoUpdate.getRequestId())));
     }
 

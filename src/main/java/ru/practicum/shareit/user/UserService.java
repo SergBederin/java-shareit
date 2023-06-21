@@ -52,21 +52,9 @@ public class UserService {
     }
 
     public void delete(Long userId) {
-        //if (userId == null) {
-        //    throw new ValidationException("Передан пустой аргумент!");
-        //}
-        //getById(userId);
         userRepository.deleteById(userId);
         log.info("Удален пользователь id={}", userId);
     }
-
-    /* private boolean validateEmail(User user) {
-        if (!userRepository.existsByEmail(user.getEmail())) {
-            return true;
-        } else {
-            throw new ConflictException("Дублируются Email пользователей.");
-        }
-    }*/
 
     @Transactional(readOnly = true)
     public User findById(Long userId) {

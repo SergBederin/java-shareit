@@ -16,7 +16,6 @@ import java.util.List;
 
 @Service
 @Transactional
-//@RequiredArgsConstructor
 @NoArgsConstructor
 
 @Slf4j
