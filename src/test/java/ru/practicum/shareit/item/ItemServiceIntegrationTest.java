@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.booking.dto.BookingShort;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.comment.CommentService;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -54,8 +54,8 @@ public class ItemServiceIntegrationTest {
         ItemDto itemDto = ItemDto.builder().name("Item").description("Item items").available(true).requestId(null).build();
         List<ItemDtoWithBookingAndComments> itemDtoWithBookingAndCommentsList = List.of(ItemDtoWithBookingAndComments.builder().id(1L).owner(ownerDtoDb.getId()).name(item.getName()).description("Item items").available(true).comments(listCommentDto).build());
         ItemDto itemDtoDb = itemService.add(itemDto, ownerDtoDb.getId());
-        BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(itemDtoDb.getId()).build();
-        bookingService.add(userDtoDb.getId(), bookingShort);
+        BookingShortDto bookingShortDto = BookingShortDto.builder().start(start).end(end).itemId(itemDtoDb.getId()).build();
+        bookingService.add(userDtoDb.getId(), bookingShortDto);
         commentService.addComment(userDtoDb.getId(), itemDtoDb.getId(), commentShort);
 
         TypedQuery<Item> query = em.createQuery("Select u from Item u where u.owner.id = :ownerId", Item.class);

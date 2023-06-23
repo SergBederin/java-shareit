@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class BookingShort {
+public class BookingShortDto {
     @NotNull
     @FutureOrPresent
     private LocalDateTime start;

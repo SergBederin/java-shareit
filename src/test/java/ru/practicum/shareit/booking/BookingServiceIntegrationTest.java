@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingShort;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -44,13 +44,13 @@ class BookingServiceIntegrationTest {
         UserDto userOwnerDto = UserDto.builder().id(2L).name("Owner").email("owner@user.ru").build();
         Item item = Item.builder().id(1L).owner(owner).name("Item").description("Item items").available(true).request(null).build();
         ItemDto itemDto = ItemDto.builder().name("Item").description("Item items").available(true).requestId(null).build();
-        BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(item.getId()).build();
+        BookingShortDto bookingShortDto = BookingShortDto.builder().start(start).end(end).itemId(item.getId()).build();
         BookingDto bookingDto = BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(item).build();
 
         userService.add(userDto);
         userService.add(userOwnerDto);
         itemService.add(itemDto, owner.getId());
-        bookingService.add(userDto.getId(), bookingShort);
+        bookingService.add(userDto.getId(), bookingShortDto);
 
         TypedQuery<Booking> query = em.createQuery("Select u from Booking u where u.booker.id = :bookerId", Booking.class);
         Booking booking = query.setParameter("bookerId", user.getId()).getSingleResult();
@@ -76,8 +76,8 @@ class BookingServiceIntegrationTest {
         UserDto userDtoDb = userService.add(userDto);
         UserDto ownerDtoDb = userService.add(userOwnerDto);
         ItemDto itemDtoDb = itemService.add(itemDto, ownerDtoDb.getId());
-        BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(itemDtoDb.getId()).build();
-        BookingDto bookingDtoDb = bookingService.add(userDtoDb.getId(), bookingShort);
+        BookingShortDto bookingShortDto = BookingShortDto.builder().start(start).end(end).itemId(itemDtoDb.getId()).build();
+        BookingDto bookingDtoDb = bookingService.add(userDtoDb.getId(), bookingShortDto);
         bookingService.bookingConfirm(ownerDtoDb.getId(), bookingDtoDb.getId(), true);
 
         TypedQuery<Booking> query = em.createQuery("Select u from Booking u where u.booker.id = :bookerId", Booking.class);

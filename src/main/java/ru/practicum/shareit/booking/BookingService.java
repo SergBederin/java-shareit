@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingShort;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.NotStateException;
@@ -40,13 +40,13 @@ public class BookingService {
     @Autowired
     private ItemService itemService;
 
-    public BookingDto add(Long userId, BookingShort bookingShort) {
+    public BookingDto add(Long userId, BookingShortDto bookingShortDto) {
         User user = userService.findById(userId);
-        Item item = itemService.getById(bookingShort.getItemId());
+        Item item = itemService.getById(bookingShortDto.getItemId());
         if (!item.getOwner().equals(user)) {
             BookingDto bookingDto = BookingDto.builder()
-                    .start(bookingShort.getStart())
-                    .end(bookingShort.getEnd())
+                    .start(bookingShortDto.getStart())
+                    .end(bookingShortDto.getEnd())
                     .booker(user)
                     .item(item)
                     .status(BookingStatus.WAITING)

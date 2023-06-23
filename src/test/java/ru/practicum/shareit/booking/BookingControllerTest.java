@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingShort;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -36,7 +36,7 @@ class BookingControllerTest {
     static User owner;
     static Item item;
     static BookingDto bookingDto;
-    static BookingShort bookingShort;
+    static BookingShortDto bookingShortDto;
     static List<BookingDto> listBookingDto;
     static LocalDateTime start;
     static LocalDateTime end;
@@ -49,7 +49,7 @@ class BookingControllerTest {
         owner = User.builder().id(2L).name("Owner").email("owner@user.ru").build();
         item = Item.builder().id(1L).owner(owner).name("Item").description("Item items").available(true).request(null).build();
         bookingDto = BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(item).build();
-        bookingShort = BookingShort.builder().start(start).end(end).itemId(item.getId()).build();
+        bookingShortDto = BookingShortDto.builder().start(start).end(end).itemId(item.getId()).build();
         listBookingDto = List.of(BookingDto.builder().start(start).end(end).status(BookingStatus.WAITING).booker(user).item(item).build());
     }
 
@@ -59,7 +59,7 @@ class BookingControllerTest {
                 .thenReturn(bookingDto);
 
         mvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(bookingShort))
+                        .content(mapper.writeValueAsString(bookingShortDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)

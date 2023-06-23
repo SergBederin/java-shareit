@@ -8,7 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingShort;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.NotStateException;
@@ -62,7 +62,7 @@ class BookingServiceTest {
 
     @Test
     void addTest() {
-        BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(1L).build();
+        BookingShortDto bookingShortDto = BookingShortDto.builder().start(start).end(end).itemId(1L).build();
 
         Mockito.when(userService.findById(any()))
                 .thenReturn(user);
@@ -72,7 +72,7 @@ class BookingServiceTest {
                 .thenReturn(booking);
         userService.add(userDto);
         itemService.add(itemDto, 1L);
-        BookingDto bookingDtoResult = bookingService.add(user.getId(), bookingShort);
+        BookingDto bookingDtoResult = bookingService.add(user.getId(), bookingShortDto);
 
         Assertions.assertEquals(bookingDto, bookingDtoResult);
     }
@@ -177,14 +177,14 @@ class BookingServiceTest {
 
     @Test
     public void bookingAddErrTest() {
-        BookingShort bookingShort = BookingShort.builder().start(start).end(end).itemId(1L).build();
+        BookingShortDto bookingShortDto = BookingShortDto.builder().start(start).end(end).itemId(1L).build();
 
         Mockito.when(userService.findById(anyLong()))
                 .thenReturn(owner);
 
         Mockito.when(itemService.getById(anyLong()))
                 .thenReturn(item);
-        final NotFoundException exception = assertThrows(NotFoundException.class, () -> bookingService.add(user.getId(), bookingShort));
+        final NotFoundException exception = assertThrows(NotFoundException.class, () -> bookingService.add(user.getId(), bookingShortDto));
 
         Assertions.assertEquals(exception.getMessage(), "Пользователь не владелец предмета бронирования.");
     }
