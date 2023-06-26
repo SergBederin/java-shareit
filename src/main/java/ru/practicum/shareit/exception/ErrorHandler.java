@@ -21,15 +21,8 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)//409
-    public ErrorResponse handleConflictException(final ConflictException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleStateException(final NotStateException e) {
         return new ErrorResponse(e.getMessage());
     }
-
 }

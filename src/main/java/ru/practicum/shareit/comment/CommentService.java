@@ -1,13 +1,14 @@
-package ru.practicum.shareit.Comment;
+package ru.practicum.shareit.comment;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.Comment.dto.CommentDto;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.exception.ValidationException;
 
 import java.time.LocalDateTime;
@@ -15,11 +16,14 @@ import java.util.List;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
+@NoArgsConstructor
+
 @Slf4j
 public class CommentService {
-    private final CommentRepository commentRepository;
-    private final BookingRepository bookingRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
 
     public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
         Booking booking = bookingRepository.getBookingByBookerIdAndItemId(userId, itemId, LocalDateTime.now());

@@ -1,11 +1,11 @@
 package ru.practicum.shareit.user;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ConflictException;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
+
 public class UserService {
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     public List<UserDto> getAll() {
         log.info("Запрос на получение всех пользователей выполнен");
@@ -30,10 +32,8 @@ public class UserService {
     }
 
     public UserDto add(UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        userRepository.save(user);
-        log.info("Добавлен пользователь = {}", user);
-        return getById(user.getId());
+        log.info("Добавлен пользователь = {}", userDto);
+        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
     public UserDto update(Long userId, UserDto userDto) {
@@ -52,19 +52,13 @@ public class UserService {
     }
 
     public void delete(Long userId) {
-        if (userId == null) {
-            throw new ValidationException("Передан пустой аргумент!");
-        }
-        getById(userId);
         userRepository.deleteById(userId);
         log.info("Удален пользователь id={}", userId);
     }
 
-    private boolean validateEmail(User user) {
-        if (!userRepository.existsByEmail(user.getEmail())) {
-            return true;
-        } else {
-            throw new ConflictException("Дублируются Email пользователей.");
-        }
+    @Transactional(readOnly = true)
+    public User findById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID=" + userId + " не найден!"));
     }
+
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -20,9 +21,9 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    BookingDto create(@Valid @RequestBody BookingDto bookingDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Выполняется запрос Post/bookings для добавление бронирования {}, пользователя с id {}", bookingDto, userId);
-        return bookingService.add(userId, bookingDto);
+    BookingDto create(@Valid @RequestBody BookingShortDto bookingShortDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.info("Выполняется запрос Post/bookings для добавление бронирования {}, пользователя с id {}", bookingShortDto, userId);
+        return bookingService.add(userId, bookingShortDto);
     }
 
     @PatchMapping("/{bookingId}")
@@ -38,15 +39,15 @@ public class BookingController {
     }
 
     @GetMapping
-    List<BookingDto> getByIdListBookings(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(required = false, defaultValue = "ALL") String state) {
+    List<BookingDto> getByIdListBookings(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(required = false, defaultValue = "ALL") String state, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) {
         log.info("Выполняется запрос GET/bookings/ на получение всех бронированйи пользователя с id= {}, и статусом {}", userId, state);
-        return bookingService.getByIdListBookings(userId, state);
+        return bookingService.getByIdListBookings(userId, state, from, size);
     }
 
     @GetMapping("/owner")
-    List<BookingDto> getByIdOwnerBookingItems(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(required = false, defaultValue = "ALL") String state) {
+    List<BookingDto> getByIdOwnerBookingItems(@NotNull @RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(required = false, defaultValue = "ALL") String state, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) {
         log.info("Выполняется запрос GET/bookings/owner на получение бронировния пользователя с id= {}, и статусом {}", userId, state);
-        return bookingService.getByIdOwnerBookingItems(userId, state);
+        return bookingService.getByIdOwnerBookingItems(userId, state, from, size);
     }
 }
 

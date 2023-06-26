@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -17,13 +18,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "group by b.id", nativeQuery = true)
     Booking getByIdBooking(Long bookingId, Long bookerId);
 
-    //List<Booking> findAllBookingByBookerId(Long userId);
     @Query(value = "select b " +
             "from Booking b " +
             "join Item i on i.id=b.item " +
             "and b.booker.id=?1 and b.booker.id <> i.owner "
             + "order by b.start desc")
-    List<Booking> getBookingByBookerIdAll(Long userId);
+    List<Booking> getBookingByBookerIdAll(Long userId, Pageable page);
 
 
     @Query(value = "select b " +
@@ -32,7 +32,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where b.booker.id = ?1 and ?2 between b.start and b.end " +
             "order by b.end desc")
-    List<Booking> getBookingByUserIdAndBookingStatusCurrent(Long userId, LocalDateTime time);
+    List<Booking> getBookingByUserIdAndBookingStatusCurrent(Long userId, LocalDateTime time, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -40,7 +40,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where b.booker.id = ?1 and b.end < ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByUserIdAndBookingStatusPast(Long userId, LocalDateTime time);
+    List<Booking> getBookingByUserIdAndBookingStatusPast(Long userId, LocalDateTime time, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -48,7 +48,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where b.booker.id = ?1 and b.start > ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByUserIdAndBookingStatusFuture(Long userId, LocalDateTime time);
+    List<Booking> getBookingByUserIdAndBookingStatusFuture(Long userId, LocalDateTime time, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -56,7 +56,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where b.booker.id = ?1 and b.bookingStatus like ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByUserIdAndBookingStatusWaiting(Long userId, BookingStatus bookingStatus);
+    List<Booking> getBookingByUserIdAndBookingStatusWaiting(Long userId, BookingStatus bookingStatus, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -64,7 +64,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where b.booker.id = ?1 and b.bookingStatus like ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByUserIdAndBookingStatusRejected(Long userId, BookingStatus bookingStatus);
+    List<Booking> getBookingByUserIdAndBookingStatusRejected(Long userId, BookingStatus bookingStatus, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -72,7 +72,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where i.owner.id = ?1 " +
             "order by b.start desc")
-    List<Booking> getBookingByOwnerIdAll(Long userId);
+    List<Booking> getBookingByOwnerIdAll(Long userId, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -80,7 +80,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where i.owner.id = ?1 and ?2 between b.start and b.end " +
             "order by b.end desc")
-    List<Booking> getByItemOwnerIdAndBookingStatusCurrent(Long userId, LocalDateTime time);
+    List<Booking> getByItemOwnerIdAndBookingStatusCurrent(Long userId, LocalDateTime time, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -88,7 +88,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where i.owner.id = ?1 and b.end < ?2 " +
             "order by b.end desc")
-    List<Booking> getByItemOwnerIdAndBookingStatusPast(Long userId, LocalDateTime time);
+    List<Booking> getByItemOwnerIdAndBookingStatusPast(Long userId, LocalDateTime time, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -96,7 +96,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where i.owner.id = ?1 and b.start > ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByItemOwnerIdAndBookingStatusFuture(Long userId, LocalDateTime time);
+    List<Booking> getBookingByItemOwnerIdAndBookingStatusFuture(Long userId, LocalDateTime time, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -104,7 +104,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where i.owner.id = ?1 and b.bookingStatus like ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByItemOwnerIdAndBookingStatusWaiting(Long userId, BookingStatus bookingStatus);
+    List<Booking> getBookingByItemOwnerIdAndBookingStatusWaiting(Long userId, BookingStatus bookingStatus, Pageable page);
 
     @Query(value = "select b " +
             "from Booking as b " +
@@ -112,7 +112,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, CrudRep
             "join fetch b.booker as u " +
             "where i.owner.id = ?1 and b.bookingStatus like ?2 " +
             "order by b.end desc")
-    List<Booking> getBookingByItemOwnerIdAndBookingStatusRejected(Long userId, BookingStatus bookingStatus);
+    List<Booking> getBookingByItemOwnerIdAndBookingStatusRejected(Long userId, BookingStatus bookingStatus, Pageable page);
 
     @Query(value = "select b.* from bookings as b " +
             "left join items as i on b.item_id = i.id " +
