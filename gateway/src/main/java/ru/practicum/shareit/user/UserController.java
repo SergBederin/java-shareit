@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Marker;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
@@ -18,12 +19,14 @@ public class UserController {
     private final UserClient userClient;
 
     @PostMapping
+    @Validated({Marker.OnCreate.class})
     public ResponseEntity<Object> addUser(@Valid @RequestBody UserDto userDtoGateway) {
         log.info("Выполняется запрос Post /users  для добавления пользователя {}", userDtoGateway);
         return userClient.addUser(userDtoGateway);
     }
 
     @PatchMapping("/{id}")
+    @Validated(Marker.OnUpdate.class)
     public ResponseEntity<Object> updateUser(@PathVariable Long id,
                                              @RequestBody UserDto userDtoGateway) {
         log.info("Выполняется запрос Patch /users/{id}  для обнавления пользователя {}", userDtoGateway);

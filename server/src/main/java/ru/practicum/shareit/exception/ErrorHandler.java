@@ -25,4 +25,9 @@ public class ErrorHandler {
     public ErrorResponse handleStateException(final NotStateException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleServerException(final InternalServerEception e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }

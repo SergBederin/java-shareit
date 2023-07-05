@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Marker;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
@@ -26,6 +27,7 @@ public class ItemController {
     private final ItemClient itemClient;
 
     @PostMapping
+    @Validated({Marker.OnCreate.class})
     public ResponseEntity<Object> addItem(@RequestHeader("X-Sharer-User-Id") long userId,
                                           @Valid @RequestBody ItemDto itemDtogateway) {
         log.info("Выполняется запрос Post /items для добавление вещи {}, пользователя с id {}", itemDtogateway, userId);
@@ -41,6 +43,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
+    @Validated(Marker.OnUpdate.class)
     public ResponseEntity<Object> updateItem(@NotNull @RequestHeader("X-Sharer-User-Id") long userId,
                                              @PathVariable long itemId,
                                              @RequestBody ItemDto itemDtogateway) {
